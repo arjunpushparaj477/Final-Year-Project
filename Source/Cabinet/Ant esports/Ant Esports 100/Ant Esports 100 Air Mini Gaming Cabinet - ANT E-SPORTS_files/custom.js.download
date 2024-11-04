@@ -1,0 +1,683 @@
+$(document).ready(function(){
+
+    /* Search Desk Toggle */
+
+    $('.search-desk-icon').click(function(){
+
+        $(this).parent().find('.topbar-searchDesk-input').toggleClass('open')
+
+    });
+
+
+
+
+
+	/* Search Mobile Toggle */
+
+    $('.search-mobile-icon').click(function(){
+
+        $(this).parent().find('.topbar-searchMob-input').toggleClass('open')
+
+    });
+
+
+
+    /* Dropdown Mobile Toggle */ 
+
+    $('.drp-mob a').click(function(){
+
+        $(this).parent().find('.drp-menu-mob').slideToggle()
+
+    });
+
+
+
+    /* Navbar Mobile Toggle */
+
+    $('.bar-iconMob').click(function(){
+
+        $('.navbar-cus-mob').slideToggle()
+
+    });
+
+
+
+     //Product page slider with zoom
+
+    // init ez-slider with slick
+
+    $('.ez-slider').on('init', function(slick) {
+
+
+
+    // slide var for use timeout
+
+    const slider = this;
+
+
+
+    // slight delay so slick init completes render
+
+    setTimeout(function() {
+
+
+
+    // init the easy zoom on slider 
+
+    $('FIGURE', slider).addClass('easyzoom').easyZoom();
+
+
+
+    // thumb buttons
+
+    let thumbs = $('.slick-dots > LI > BUTTON', slider);
+
+
+
+    // each thumbnail button function
+
+    $.each(thumbs, function(i, e) {
+
+
+
+    // slide id
+
+    let slide_id = $(this).attr('aria-controls');
+
+
+
+    // get thumbnail image src
+
+    let thumb_img = $('#' + slide_id).find('IMG').attr('src');
+
+
+
+    // change thumb button inner html too
+
+    $(this).html('<img src="' + thumb_img + '" alt="" />');
+
+
+
+    });
+
+
+
+    }, 100);
+
+
+
+    // then our slick options
+
+    }).slick({
+
+    slidesToShow: 1,
+
+    slidesToScroll: 1,
+
+    dots: true,
+
+    arrows: false,
+
+    adaptiveHeight: true,
+
+    asNavFor: '.ez-slider .slick-dots',
+
+    autoplay: false,
+
+    });
+
+
+
+    //Thumnail slider options
+
+    $('.ez-slider .slick-dots')
+
+                .on('init', function(slick) {
+
+                    $('.ez-slider .slick-dots').fadeIn(1000);
+
+                    const slider = $('.ez-slider');      
+
+                    const thumbsClass = $(this).find('.slick-list li button')     
+
+                  setTimeout(function() {          
+
+                 // thumb buttons
+
+                  let thumbs = thumbsClass;          
+
+
+
+                 
+
+                  $.each(thumbs, function(i, e) {
+
+                   let slide_id = $(this).attr('aria-controls');            
+
+                  let thumb_img = $('#' + slide_id).find('IMG').attr('src');
+
+                  // change thumb button inner html too
+
+                  $(this).html('<img src="' + thumb_img + '" alt="" />');
+
+                   $(this).on('click', function() {
+
+                      // Move aria-current="true" to this button                
+
+                      // Change the main image to match this thumbnail button
+
+                      var index = $(this).closest('.slick-slide').data('slick-index');
+
+                      $('.ez-slider').slick('slickGoTo', index);
+
+                    });
+
+
+
+                  });
+
+
+
+                  }, 100);
+
+                })
+
+                .slick({
+
+                     slidesToShow: 4,
+
+                     slidesToScroll: 1,
+
+                     asNavFor: '.ez-slider',
+
+                     dots: false,
+
+                     arrows:true,
+
+                     centerMode: false,
+
+                     focusOnSelect: false,                  
+
+                     autoplay: false,
+
+                     focusOnChange:false               
+
+                });
+
+
+
+                //Product Page slider ends
+
+
+
+
+
+                  //Quantity plus minus
+
+                $('.input-grp-qty .qty-plus').click(function(){
+
+                    let inputVal = $(this).parent().find('input').val()                   
+
+                    let input = $(this).parent().find('input')
+
+                    input.val(Number(inputVal)+1)                 
+
+                })
+
+                $('.input-grp-qty .qty-minus').click(function(){
+
+                    let inputVal = $(this).parent().find('input').val()                   
+
+                    let input = $(this).parent().find('input')
+
+                    if(inputVal > 1){
+
+                        return  input.val(Number(inputVal)-1)        
+
+                    }
+
+                            
+
+                });
+
+                //Quantity plus minus ends
+
+
+
+                    /*  Feedback radios */
+
+
+                    $("input[name=ever_heard]:radio").click(function(ev) {
+                      if (ev.currentTarget.value == "Yes") {
+                        $('.first-yes-content').slideDown();                      
+
+                      } else if (ev.currentTarget.value == "No") {
+                        $('.first-yes-content').slideUp();   
+
+                      }
+                    });
+
+                    $("input[name=used_any]:radio").click(function(ev) {
+                      if (ev.currentTarget.value == "Yes") {
+                        console.log("dfsf")
+                        $('.product-type-content').slideDown();                      
+
+                      } else if (ev.currentTarget.value == "No") {
+                        $('.product-type-content').slideUp();   
+
+                      }
+                    });
+
+
+                     $("input[name=how_find]:radio").click(function(ev) {
+                      if (ev.currentTarget.value == "Excellent" || ev.currentTarget.value == "Good") {
+                        console.log("good")
+                        $('.good-experience').slideDown();   
+                        $('.bad-experience').slideUp();                   
+
+                      } else if (ev.currentTarget.value == "Bad" || ev.currentTarget.value == "Terrible") {
+                        $('.good-experience').slideUp();     
+                        $('.bad-experience').slideDown();   
+
+                      }
+                    });
+
+                    $("input[name=experience]:radio").click(function(ev) {
+                      if (ev.currentTarget.value == "Excellent" || ev.currentTarget.value == "Good") {
+                        console.log("good")
+                        $('.good-experience-overall').slideDown();   
+                        $('.bad-experience-overall').slideUp();                   
+
+                      } else if (ev.currentTarget.value == "Bad" || ev.currentTarget.value == "Terrible") {
+                        $('.good-experience-overall').slideUp();     
+                        $('.bad-experience-overall').slideDown();   
+
+                      }
+                    });
+
+
+
+                // Chat window toggle
+
+                $('.chat-icon').click(function(){
+
+                    $(this).fadeOut();
+
+                    $(this).parent().find('.chat-window-sec').slideDown()
+
+                })
+
+
+
+                // Chat window toggle ends
+
+
+
+                //Chat Ans toggle       
+
+
+
+                $('.chat-ques-heading').click(function(){       
+
+                    $(this).parent().siblings().find('.chat-ans').slideUp();
+
+                    $(this).parent().find('.chat-ans').slideToggle();                 
+
+                  });
+
+
+
+
+
+                 //Chat Window close  
+
+                $('.chat-window-icon').click(function(){                 
+
+                    $(this).parent().parent().find('.chat-icon').fadeIn()
+
+                    $(this).parent().slideUp()
+
+                })
+
+
+
+
+
+})
+
+
+
+
+
+
+
+/*===============VIPS===============*/
+
+
+
+$(document).ready(function(){
+
+  $('.stars a').append('<i class="fas fa-star"></i>');
+
+  $(".stars a").click(function(){
+    $clicked = this.className;
+    $clickedRating = $clicked.charAt($clicked.length - 1);
+    $('.stars a i').css("color", "#ccc"); 
+    $('.stars a.star-'+$clickedRating+' i').css("color", "yellow");
+    $('.stars a.star-'+($clickedRating-1)+' i').css("color", "yellow");
+    $('.stars a.star-'+($clickedRating-2)+' i').css("color", "yellow");
+    $('.stars a.star-'+($clickedRating-3)+' i').css("color", "yellow");
+    $('.stars a.star-'+($clickedRating-4)+' i').css("color", "yellow");
+    $('.stars a.star-'+($clickedRating-5)+' i').css("color", "yellow");
+  });
+
+});
+
+
+
+ $(document).ready(function(){
+
+    // Chat window toggle
+
+        $('.chat-icon').click(function(){
+            $(this).fadeOut();
+            $(this).parent().find('.chat-window-sec').slideDown()
+        })
+        // Chat window toggle ends
+
+        //Chat Ans toggle 
+        $('.chat-ques-heading').click(function(){ 
+            $(this).parent().siblings().find('.chat-ans').slideUp();
+            $(this).parent().find('.chat-ans').slideDown(); 
+        });
+
+
+
+
+
+         //Chat Window close  
+
+        $('.chat-window-icon').click(function(){                 
+
+            $(this).parent().parent().find('.chat-icon').fadeIn()
+
+            $(this).parent().slideUp()
+
+        })
+
+})
+
+
+
+$(document).ready(function(){
+
+          // Testimonials
+
+          
+
+    $('#testimonialsSlider').slick({
+
+       dots: true,
+
+       arrows:false,
+
+       infinite: true,
+
+       autoplay: true,
+
+       autoplaySpeed: 4000,
+
+       speed: 300,
+
+       slidesToShow: 1,
+
+       slidesToScroll: 1,
+
+       adaptiveHeight: true
+
+    });
+
+
+
+
+
+  $('#latestProducts').slick({
+
+   dots: false,
+
+   infinite: true,
+
+   speed: 300,
+
+   slidesToShow: 5,
+
+   slidesToScroll: 5,
+
+   arrows:true,
+
+   responsive: [
+
+      {
+
+     breakpoint: 1600,
+
+     settings: {
+
+      slidesToShow: 4,
+
+      slidesToScroll: 4,
+
+      infinite: true,
+
+      dots: true
+
+   }
+
+},
+
+   {
+
+     breakpoint: 1024,
+
+     settings: {
+
+      slidesToShow: 3,
+
+      slidesToScroll: 3,
+
+      infinite: true,
+
+      dots: true
+
+   }
+
+},
+
+{
+
+  breakpoint: 600,
+
+  settings: {
+
+   slidesToShow: 2,
+
+   slidesToScroll: 2
+
+}
+
+},
+
+{
+
+  breakpoint: 547,
+
+  settings: {
+
+   slidesToShow: 1,
+
+   slidesToScroll: 1,
+
+    slidesPerRow: 2,
+
+        rows: 2
+
+}
+
+}            
+
+]
+
+});
+
+
+
+    $('#ourProductsSlider').slick({
+
+       dots: false,
+
+       infinite: true,
+
+       speed: 300,
+
+       slidesToShow: 5,
+
+       slidesToScroll: 5,
+
+       arrows:true,
+
+       responsive: [
+
+           {
+
+         breakpoint: 1600,
+
+         settings: {
+
+              slidesToShow: 4,
+
+              slidesToScroll: 4,
+
+              infinite: true,
+
+              dots: true
+
+            }
+
+    },
+
+       {
+
+         breakpoint: 1024,
+
+         settings: {
+
+          slidesToShow: 3,
+
+          slidesToScroll: 3,
+
+          infinite: true,
+
+          dots: true
+
+       }
+
+    },
+
+    {
+
+      breakpoint: 600,
+
+      settings: {
+
+       slidesToShow: 2,
+
+       slidesToScroll: 2
+
+    }
+
+    },
+
+    {
+
+      breakpoint: 480,
+
+      settings: {
+
+       slidesToShow: 1,
+
+       slidesToScroll: 1,
+
+        slidesPerRow: 2,
+
+            rows: 2
+
+    }
+
+    }
+
+                 
+
+    ]
+
+    });
+
+(function(){
+  var searchTerm, panelContainerId;
+  // Create a new contains that is case insensitive
+  $.expr[':'].containsCaseInsensitive = function (n, i, m) {
+    return jQuery(n).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+  };
+  
+  $('#accordion_search_bar').on('change keyup paste click', function () {
+    searchTerm = $(this).val();
+   /* console.log(searchTerm)*/
+    $('#accordion > .card').each(function () {
+      
+      panelContainerId = '#' + $(this).attr('id');
+      console.log(panelContainerId)
+      $(panelContainerId + ':not(:containsCaseInsensitive(' + searchTerm + '))').hide();
+      $(panelContainerId + ':containsCaseInsensitive(' + searchTerm + ')').show();
+     /* console.log($(panelContainerId + ':containsCaseInsensitive(' + searchTerm + ')'))*/
+      console.log($(panelContainerId + ':not(:containsCaseInsensitive(' + searchTerm + '))'))
+    });
+  });
+}());
+
+})
+
+
+
+
+
+$(".cart-table-mobile .quantity").click(function(){
+    $('.mobileCouponBox button[name="update_cart"]').prop("disabled", false);
+});
+
+
+
+ //Loader on filter click-->
+ /*
+$(".leftBar .bapf_body ul li input").click(function(){
+  $('#load').show();
+});
+$(".leftBar .bapf_body ul li label").click(function(){
+  $('#load').show();
+});
+
+*/
+$('input.bapf_slidr_num').change(function() {
+    $('#load').show();
+});
+
+$('.bapf_body input').change(function() {
+    $('#load').show();
+});
+
+
+
+
+
+
+
+
+
