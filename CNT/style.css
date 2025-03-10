@@ -1,0 +1,22 @@
+input:checked + .slider{
+    background-color:#0fbcf9;
+}
+input:checked + .slider:before{
+    transform:translatex(26px);
+}
+.slider:after{
+    content: "OFF";
+    position: absolute;
+    left: 4px;
+    top: 46%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    opacity: 1;
+    transition: 0.4s;
+}
+
+input:checked + .slider:after{
+    content: "ON";
+    left: 36px;
+    opacity: 1;
+}
