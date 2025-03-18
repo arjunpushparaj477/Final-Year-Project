@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div id="app">
+        <nav class="bg-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <h1 class="text-xl font-bold">Super Admin Dashboard</h1>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-gray-700 mr-4">${ currentUser.username }</span>
+                        <button @click="logout" class="bg-red-500 text-white px-4 py-2 rounded">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-xl font-semibold mb-2">Total Users</h2>
+                    <p class="text-3xl">${ stats.totalUsers }</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h2 class="text-xl font-semibold mb-2">Active Users</h2>
+                    <p class="text-3xl">${ stats.activeUsers }</p>
+                </div>
+            </div>
+
+            <!-- User Management Section -->
+            <div class="bg-white shadow rounded-lg p-6 mb-8">
+                <h2 class="text-2xl font-bold mb-4">User Management</h2>
+                <div class="mb-4 flex justify-between items-center">
+                    <input v-model="searchQuery" type="text" placeholder="Search users..." 
+                           class="border rounded px-4 py-2 w-64">
+                    <button @click="showAddUserModal" 
+                            class="bg-blue-500 text-white px-4 py-2 rounded">
+                        Add User
+                    </button>
+                </div>
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="user in filteredUsers" :key="user.id">
+                            <td class="px-6 py-4 whitespace-nowrap">${ user.first_name } ${ user.last_name }</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${ user.email }</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${ user.role }</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span :class="getStatusClass(user.status)">${ user.status }</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <button @click="editUser(user)" class="text-blue-600 hover:text-blue-900 mr-2">Edit</button>
+                                <button @click="deleteUser(user.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Center Management Section -->
+            <div class="bg-white shadow rounded-lg p-6">
+                <h2 class="text-2xl font-bold mb-4">Center Management</h2>
+                <div class="mb-4 flex justify-between items-center">
+                    <input v-model="centerSearchQuery" type="text" placeholder="Search centers..." 
+                           class="border rounded px-4 py-2 w-64">
+                    <button @click="showAddCenterModal" 
+                            class="bg-blue-500 text-white px-4 py-2 rounded">
+                        Add Center
+                    </button>
+                </div>
+                <table class="w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="center in filteredCenters" :key="center.id">
+                            <td class="px-6 py-4 whitespace-nowrap">${ center.name }</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${ center.address }</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${ center.contact_number }</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span :class="getStatusClass(center.status)">${ center.status }</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <button @click="editCenter(center)" class="text-blue-600 hover:text-blue-900 mr-2">Edit</button>
+                                <button @click="deleteCenter(center.id)" class="text-red-600 hover:text-red-900">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add before the closing </div> of the app container -->
+            
+            <!-- User Modal -->
+            <div v-if="showUserModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="mt-3">
+                        <h3 class="text-lg font-medium">${ editingUser ? 'Edit User' : 'Add New User' }</h3>
+                        <form @submit.prevent="saveUser" class="mt-4">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">First Name</label>
+                                <input v-model="userForm.first_name" type="text" class="border rounded w-full py-2 px-3" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Last Name</label>
+                                <input v-model="userForm.last_name" type="text" class="border rounded w-full py-2 px-3" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                                <input v-model="userForm.email" type="email" class="border rounded w-full py-2 px-3" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Role</label>
+                                <select v-model="userForm.role" class="border rounded w-full py-2 px-3">
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                                <select v-model="userForm.status" class="border rounded w-full py-2 px-3">
+                                    <option value="active">Active</option>
+                                    <option value="suspended">Suspended</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" @click="closeUserModal" class="mr-2 px-4 py-2 text-gray-500">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center Modal -->
+            <div v-if="showCenterModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+                <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="mt-3">
+                        <h3 class="text-lg font-medium">${ editingCenter ? 'Edit Center' : 'Add New Center' }</h3>
+                        <form @submit.prevent="saveCenter" class="mt-4">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Name</label>
+                                <input v-model="centerForm.name" type="text" class="border rounded w-full py-2 px-3" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Address</label>
+                                <textarea v-model="centerForm.address" class="border rounded w-full py-2 px-3" required></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Contact Number</label>
+                                <input v-model="centerForm.contact_number" type="text" class="border rounded w-full py-2 px-3" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Email</label>
+                                <input v-model="centerForm.email" type="email" class="border rounded w-full py-2 px-3" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                                <select v-model="centerForm.status" class="border rounded w-full py-2 px-3">
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="flex justify-end">
+                                <button type="button" @click="closeCenterModal" class="mr-2 px-4 py-2 text-gray-500">Cancel</button>
+                                <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update the script section with new data and methods -->
+            <script>
+                const app = Vue.createApp({
+                    data() {
+                        return {
+                            stats: {
+                                totalUsers: 0,
+                                activeUsers: 0
+                            },
+                            users: [],
+                            centers: [],
+                            searchQuery: '',
+                            centerSearchQuery: '',
+                            currentUser: {}
+                        }
+                    },
+                    computed: {
+                        filteredUsers() {
+                            return this.users.filter(user => 
+                                user.first_name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                                user.email.toLowerCase().includes(this.searchQuery.toLowerCase())
+                            )
+                        },
+                        filteredCenters() {
+                            return this.centers.filter(center => 
+                                center.name.toLowerCase().includes(this.centerSearchQuery.toLowerCase())
+                            )
+                        }
+                    },
+                    methods: {
+                        async fetchStats() {
+                            const response = await axios.get('/api/users/dashboard_stats/');
+                            this.stats = response.data;
+                        },
+                        async fetchUsers() {
+                            const response = await axios.get('/api/users/');
+                            this.users = response.data;
+                        },
+                        async fetchCenters() {
+                            const response = await axios.get('/api/centers/');
+                            this.centers = response.data;
+                        },
+                        getStatusClass(status) {
+                            return {
+                                'active': 'px-2 py-1 text-green-800 bg-green-100 rounded-full',
+                                'suspended': 'px-2 py-1 text-red-800 bg-red-100 rounded-full',
+                                'inactive': 'px-2 py-1 text-gray-800 bg-gray-100 rounded-full'
+                            }[status] || '';
+                        },
+                        async logout() {
+                            // Implement logout logic here
+                            localStorage.removeItem('token');
+                            window.location.href = '/login';
+                        },
+                        async initializeCharts() {
+                            const userCtx = document.getElementById('userGrowthChart').getContext('2d');
+                            const centerCtx = document.getElementById('centerDistributionChart').getContext('2d');
+                            const activityCtx = document.getElementById('userActivityChart').getContext('2d');
+                            const performanceCtx = document.getElementById('centerPerformanceChart').getContext('2d');
+                            
+                            this.charts = {
+                                userGrowth: new Chart(userCtx, {
+                                    type: 'line',
+                                    data: {
+                                        labels: [],
+                                        datasets: [{
+                                            label: 'New Users',
+                                            data: [],
+                                            borderColor: '#3B82F6',
+                                            tension: 0.1
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        interaction: {
+                                            intersect: false,
+                                            mode: 'index'
+                                        },
+                                        plugins: {
+                                            tooltip: {
+                                                callbacks: {
+                                                    label: function(context) {
+                                                        return `Users: ${context.parsed.y}`;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }),
+                                
+                                centerDistribution: new Chart(centerCtx, {
+                                    type: 'doughnut',
+                                    data: {
+                                        labels: ['Active', 'Inactive'],
+                                        datasets: [{
+                                            data: [],
+                                            backgroundColor: ['#10B981', '#EF4444']
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        plugins: {
+                                            legend: {
+                                                position: 'bottom'
+                                            }
+                                        }
+                                    }
+                                }),
+                            
+                                userActivity: new Chart(activityCtx, {
+                                    type: 'bar',
+                                    data: {
+                                        labels: [],
+                                        datasets: [{
+                                            label: 'Login Activity',
+                                            data: [],
+                                            backgroundColor: '#60A5FA'
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true
+                                            }
+                                        }
+                                    }
+                                }),
+                            
+                                centerPerformance: new Chart(performanceCtx, {
+                                    type: 'radar',
+                                    data: {
+                                        labels: ['Users', 'Activity', 'Uptime', 'Response', 'Rating'],
+                                        datasets: [{
+                                            label: 'Performance Metrics',
+                                            data: [],
+                                            borderColor: '#8B5CF6',
+                                            backgroundColor: 'rgba(139, 92, 246, 0.2)'
+                                        }]
+                                    },
+                                    options: {
+                                        responsive: true,
+                                        scales: {
+                                            r: {
+                                                beginAtZero: true,
+                                                max: 100
+                                            }
+                                        }
+                                    }
+                                })
+                            };
+                        }
+                    }
+                        async exportData(type, format = 'csv') {
+                            const response = await axios.get(`/api/export/${type}?format=${format}`, {
+                                responseType: 'blob'
+                            });
+                            const url = window.URL.createObjectURL(new Blob([response.data]));
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `${type}_export.${format}`;
+                            link.click();
+                        },
+
+                        async exportCustomReport() {
+                            const response = await axios.post('/api/reports/custom', {
+                                format: this.exportFormat,
+                                filters: this.advancedSearch,
+                                dateRange: this.chartOptions.timeRange,
+                                includeCharts: true,
+                                template: this.selectedTemplate
+                            }, {
+                                responseType: 'blob'
+                            });
+                            
+                            const url = window.URL.createObjectURL(new Blob([response.data]));
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `custom_report_${new Date().toISOString()}.${this.exportFormat}`;
+                            link.click();
+                        }
+                    },
+                    mounted() {
+                        this.fetchStats();
+                        this.fetchUsers();
+                        this.fetchCenters();
+                        this.initializeCharts();
+                        this.initializeWebSocket();
+                        this.fetchActivities();
+                    }
+                    data() {
+                        return {
+                            availableWidgets: [
+                                { id: 1, name: 'User Statistics', visible: true, size: 'medium', refreshRate: 60, theme: 'default' },
+                                { id: 2, name: 'Center Analytics', visible: true, size: 'medium', refreshRate: 60, theme: 'default' },
+                                { id: 3, name: 'Activity Log', visible: true, size: 'large', refreshRate: 30, theme: 'default' },
+                                { id: 4, name: 'System Health', visible: true, size: 'small', refreshRate: 30, theme: 'default' },
+                                { id: 5, name: 'Recent Users', visible: true, size: 'medium', refreshRate: 60, theme: 'default' },
+                                { id: 6, name: 'Performance Metrics', visible: true, size: 'large', refreshRate: 300, theme: 'default' }
+                            ],
+                            widgetLayout: []
+                        }
+                    },
+                    methods: {
+                        getWidgetClass(widget) {
+                            const sizeClasses = {
+                                small: 'col-span-1',
+                                medium: 'col-span-2',
+                                large: 'col-span-4'
+                            };
+                            return sizeClasses[widget.size];
+                        },
+                    
+                        dragStart(event, widget) {
+                            event.dataTransfer.setData('widget-id', widget.id);
+                        },
+                    
+                        drop(event, targetWidget) {
+                            const draggedWidgetId = event.dataTransfer.getData('widget-id');
+                            const draggedWidget = this.availableWidgets.find(w => w.id === parseInt(draggedWidgetId));
+                            
+                            if (draggedWidget && targetWidget) {
+                                const draggedIndex = this.widgetLayout.indexOf(draggedWidget);
+                                const targetIndex = this.widgetLayout.indexOf(targetWidget);
+                                
+                                this.widgetLayout.splice(draggedIndex, 1);
+                                this.widgetLayout.splice(targetIndex, 0, draggedWidget);
+                                
+                                this.saveWidgetLayout();
+                            }
+                        }
+                    
+                        async saveWidgetLayout() {
+                            try {
+                                await axios.post('/api/dashboard/layout', {
+                                    widgets: this.widgetLayout.map(w => ({
+                                        id: w.id,
+                                        visible: w.visible,
+                                        size: w.size,
+                                        refreshRate: w.refreshRate,
+                                        theme: w.theme
+                                    }))
+                                });
+                                this.showNotification('Layout saved successfully', 'success');
+                            } catch (error) {
+                                this.showNotification('Failed to save layout', 'error');
+                            }
+                        }
+                    }
+                        async exportData(type, format = 'csv') {
+                            const response = await axios.get(`/api/export/${type}?format=${format}`, {
+                                responseType: 'blob'
+                            });
+                            const url = window.URL.createObjectURL(new Blob([response.data]));
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `${type}_export.${format}`;
+                            link.click();
+                        },
+
+                        async exportCustomReport() {
+                            const response = await axios.post('/api/reports/custom', {
+                                format: this.exportFormat,
+                                filters: this.advancedSearch,
+                                dateRange: this.chartOptions.timeRange,
+                                includeCharts: true,
+                                template: this.selectedTemplate
+                            }, {
+                                responseType: 'blob'
+                            });
+                            
+                            const url = window.URL.createObjectURL(new Blob([response.data]));
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = `custom_report_${new Date().toISOString()}.${this.exportFormat}`;
+                            link.click();
+                        }
+                    },
+                    mounted() {
+                        this.fetchStats();
+                        this.fetchUsers();
+                        this.fetchCenters();
+                        this.initializeCharts();
+                        this.initializeWebSocket();
+                        this.fetchActivities();
+                    }
+                    updateChartInteractivity() {
+                        Object.values(this.charts).forEach(chart => {
+                            chart.options.plugins.zoom = {
+                                zoom: {
+                                    wheel: { enabled: this.chartInteractions.zoom },
+                                    pinch: { enabled: this.chartInteractions.zoom },
+                                    mode: 'xy'
+                                },
+                                pan: { enabled: this.chartInteractions.pan }
+                            };
+                            chart.update();
+                        });
+                    }
+                }).mount('#app')
