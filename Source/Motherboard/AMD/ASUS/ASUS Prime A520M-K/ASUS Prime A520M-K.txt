@@ -1,6 +1,0 @@
-Name: ASUS Prime A520M-K (AMD AM4 DDR4 Socket for AMD Ryzen 5000/5000 G/ 4000 G/ 3000) Micro ATX Motherboard with M.2 Support 1Gb Ethernet HDMI/D-Sub SATA 6Gbps and USB 3.2 Gen 1 Type-A
-dec:Supports 9th/ 8th Gen Intel Core/ Pentium gold/ Celeron Processors for LGA 1151 socket
-Audio Boost reward your ears with studio grade sound quality
-Ez Debug LED easiest way to troubleshoot
-Supports DDR4 Memory up to 2666MHz
-X-boost software that auto-detects and allows you to boost the performance of any storage or USB device
